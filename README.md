@@ -108,6 +108,14 @@ When you no longer need the deployment, you can run this command to destroy the 
 ## Contributing
 This project is open source.  Please submit your contributions by forking this repository and submitting a pull request!  Oracle appreciates any contributions that are made by the open source community.
 
+### Attribution & Credits
+Initially, this project was created and distributed in [GitHub Oracle QuickStart space](https://github.com/oracle-quickstart/oci-arch-tomcat-mds). For that reason, we would like to thank all the involved contributors enlisted below:
+- Lukasz Feldman (https://github.com/lfeldman)
+- Jeevan Joseph (https://github.com/jeevanjoseph)
+- Orlando Gentil (https://github.com/oegentil)
+- Ben Lackey (https://github.com/benofben) 
+- Nuno Gonçalves (https://github.com/nugoncal)
+
 ## License
 Copyright (c) 2021 Oracle and/or its affiliates.
 
