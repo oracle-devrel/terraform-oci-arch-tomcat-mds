@@ -16,3 +16,5 @@ numberOfNodes = 2
 # mysql_db_system_admin_password
 mysql_db_system_admin_password = "<mysql_db_system_admin_password>"
 
+# mysql_db_system_password
+mysql_db_system_password = "<mysql_db_system_password>"
