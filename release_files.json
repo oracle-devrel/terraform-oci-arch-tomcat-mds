@@ -28,9 +28,6 @@
         "dst": "provider.tf"
       },
       {
-        "src_pattern": "java/*"
-      },
-      {
         "src_pattern": "scripts/*"
       }        
     ]

@@ -1,4 +1,4 @@
-## Copyright © 2020, Oracle and/or its affiliates. 
+## Copyright (c) 2022, Oracle and/or its affiliates. 
 ## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 title: "Create highly available Tomcat setup with web application accessing MDS in Oracle Cloud Infrastructure"
@@ -14,23 +14,25 @@ variableGroups:
   - tenancy_ocid
   - region
   - release
-  - availablity_domain_number
+  - availability_domain_number
   - use_existing_vcn
   - use_existing_nsg
   - vcn_id
   - lb_subnet_id
+  - fss_subnet_id
   - lb_nsg_ids
   - compute_subnet_id
   - compute_nsg_ids
   - mds_subnet_id
   - bastion_subnet_id
   - bastion_nsg_ids
+  - mysql_db_system_maintenance_window_start_time
 
 - title: Required Configuration
   visible: true  
   variables:
   - compartment_ocid
-  - availablity_domain_name
+  - availability_domain_name
   - mysql_db_system_admin_password
   - numberOfNodes
   - tomcat_version
@@ -51,20 +53,21 @@ variableGroups:
       and:
         - show_advanced
   variables:
-  - igw_display_name
-  - vcn01_cidr_block
-  - vcn01_dns_label
-  - vcn01_display_name
-  - vcn01_subnet_pub01_cidr_block
-  - vcn01_subnet_pub01_display_name
-  - vcn01_subnet_pub02_cidr_block
-  - vcn01_subnet_pub02_display_name  
-  - vcn01_subnet_app01_cidr_block
-  - vcn01_subnet_app01_display_name 
-  - vcn01_subnet_db01_cidr_block
-  - vcn01_subnet_db01_display_name
+  - tomcat_mds_vcn_cidr_block
+  - tomcat_mds_vcn_dns_label
+  - tomcat_mds_vcn_display_name
+  - tomcat_mds_vcn_subnet_lb_cidr_block
+  - tomcat_mds_vcn_subnet_lb_display_name
+  - tomcat_mds_vcn_subnet_bastion_cidr_block
+  - tomcat_mds_vcn_subnet_bastion_display_name  
+  - tomcat_mds_vcn_subnet_app_cidr_block
+  - tomcat_mds_vcn_subnet_app_display_name 
+  - tomcat_mds_vcn_subnet_fss_cidr_block
+  - tomcat_mds_vcn_subnet_fss_display_name 
+  - tomcat_mds_vcn_subnet_db_cidr_block
+  - tomcat_mds_vcn_subnet_db_display_name
 
-- title: Compute Instances Configuration
+- title: Tomcat Compute Instances Configuration
   visible: 
       and:
         - show_advanced
@@ -76,19 +79,29 @@ variableGroups:
   - instance_os
   - linux_os_version
 
+- title: Bastion Compute Instances Configuration
+  visible: 
+      and:
+        - show_advanced
+  variables:
+  - BastionShape
+  - BastionFlexShapeOCPUS
+  - BastionFlexShapeMemory
+
 - title: MySQL Database System Configuration
   visible: 
       and:
         - show_advanced
   variables: 
-  - mysql_shape_name
-  - mysql_is_highly_available 
+  - mysql_db_system_shape
+  - mysql_db_system_db_name 
   - mysql_db_system_admin_username
   - mysql_db_name
   - mysql_db_system_backup_policy_is_enabled
   - mysql_db_system_data_storage_size_in_gb
   - mysql_db_system_display_name
   - mysql_db_system_hostname_label
+  - mysql_db_system_maintenance_window_start_time
 
 variables:
 
@@ -150,13 +163,6 @@ variables:
       - "9.0.45"
       - "8.5.65"
       - "7.0.108"
-
-  mysql_is_highly_available:
-    type: boolean
-    title: "MySQL Database System in HA?"
-    description: "Choose if MySQL Database System should be highly available."
-    visible: true
-    default: false
 
   mysql_db_system_admin_password:
     type: password
@@ -227,87 +233,89 @@ variables:
     description: "Type InternetGateway Display Name."
     default: "internet-gateway"
 
-  vcn01_cidr_block:
+  tomcat_mds_vcn_cidr_block:
     type: string
     required: false
     pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
     title: "VCN CIDR Block"
     description: "Choose CIDR block for your VCN."
-    default: "10.0.0.0/16"
 
-  vcn01_dns_label:
-    type: string
-    required: false
-    title: "VCN DNS Label"
-    description: "Choose DNS Label for your VCN."
-    default: "vcn01"
-
-  vcn01_display_name:
+  tomcat_mds_vcn_display_name:
     type: string
     required: false
     title: "VCN Display Name"
     description: "Choose Display Name for your VCN."
-    default: "vcn01"
+    default: "tomcat_mds_vcn"
 
-  vcn01_subnet_pub01_cidr_block:
+  tomcat_mds_vcn_subnet_lb_cidr_block:
     type: string
     required: false
     pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
     title: "Load Balancer Public Subnet CIDR Block"
     description: "Choose CIDR block for your Load Balancer Public Subnet."
-    default: "10.0.1.0/24"
 
-  vcn01_subnet_pub01_display_name:
+  tomcat_mds_vcn_subnet_lb_display_name:
     type: string
     required: false
     title: "Load Balancer Public Subnet Display Name"
     description: "Choose Display Name for your Load Balancer Public Subnet."
-    default: "vcn01_subnet_pub01"
+    default: "tomcat_mds_vcn_subnet_lb"
 
-  vcn01_subnet_pub02_cidr_block:
+  tomcat_mds_vcn_subnet_bastion_cidr_block:
     type: string
     required: false
     pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
     title: "Bastion Host Public Subnet CIDR Block"
     description: "Choose CIDR block for your Bastion Host Public Subnet."
-    default: "10.0.2.0/24"
 
-  vcn01_subnet_pub02_display_name:
+  tomcat_mds_vcn_subnet_bastion_display_name:
     type: string
     required: false
     title: "Bastion Host Public Subnet Display Name"
     description: "Choose Display Name for your Bastion Host Public Subnet."
-    default: "vcn01_subnet_pub02"
+    default: "tomcat_mds_vcn_subnet_bastion"
 
-  vcn01_subnet_app01_cidr_block:
+  tomcat_mds_vcn_subnet_app_cidr_block:
     type: string
     required: false
     pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
     title: "Tomcat Servers Public Subnet CIDR Block"
     description: "Choose CIDR block for your Tomcat Servers Public Subnet."
-    default: "10.0.10.0/24"
 
-  vcn01_subnet_app01_display_name:
+  tomcat_mds_vcn_subnet_app_display_name:
     type: string
     required: false
     title: "Tomcat Servers Public Subnet Display Name"
     description: "Choose Display Name for your Tomcat Servers Public Subnet."
-    default: "vcn01_subnet_app01"
+    default: "tomcat_mds_vcn_subnet_app"
 
-  vcn01_subnet_db01_cidr_block:
+  tomcat_mds_vcn_subnet_fss_cidr_block:
+    type: string
+    required: false
+    pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
+    title: "FSS Subnet CIDR Block"
+    description: "Choose CIDR block for your FSS Subnet."
+
+  tomcat_mds_vcn_subnet_fss_display_name:
+    type: string
+    required: false
+    title: "FSS Subnet Display Name"
+    description: "Choose Display Name for your FSS Subnet."
+    default: "tomcat_mds_vcn_subnet_fss"
+
+  tomcat_mds_vcn_subnet_db_cidr_block:
     type: string
     required: false
     pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
     title: "MDS Private Subnet CIDR Block"
     description: "Choose CIDR block for your MDS Private Subnet."
-    default: "10.0.20.0/24"
 
-  vcn01_subnet_db01_display_name:
+  tomcat_mds_vcn_subnet_db_display_name:
     type: string
     required: false
     title: "MDS Private Subnet Display Name"
     description: "Choose Display Name for your MDS Private Subnet."
-    default: "vcn01_subnet_db01"
+    default: "tomcat_mds_vcn_subnet_db"
 
   ssh_public_key:
     type: oci:core:ssh:publickey
@@ -374,6 +382,77 @@ variables:
             - InstanceShape 
             - "VM.Optimized3.Flex"
 
+  BastionShape:
+    type: oci:core:instanceshape:name
+    required: false
+    title: "Bastion VM Shape"
+    description: "A shape is a template that determines the number of CPUs, amount of memory, and other resources allocated to a newly created instance."
+    default: "VM.Standard.E3.Flex"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    visible:
+      and:
+        - eq:
+          - use_bastion_service
+          - false
+
+  BastionFlexShapeOCPUS:
+    type: number
+    required: false
+    minimum: 1
+    maximum: 128
+    multipleOf: 1
+    default: 1
+    title: "Bastion Shape Flex Shape OCPUs"
+    description: "Choose number of OCPUs for Flex Shape."
+    visible:
+      and:
+        - eq:
+          - use_bastion_service
+          - false
+        - or:
+          - eq:
+            - BastionShape 
+            - "VM.Standard.E3.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Standard.E4.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Standard.A1.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Optimized3.Flex"
+
+
+  BastionFlexShapeMemory:
+    type: number
+    required: false
+    minimum: 1
+    maximum: 128
+    multipleOf: 1
+    default: 6
+    title: "Bastion Shape Flex Shape Memory (GB)"
+    description: "Choose number GB for Flex Shape Memory."
+    visible:
+      and:
+        - eq:
+          - use_bastion_service
+          - false
+        - or:
+          - eq:
+            - BastionShape 
+            - "VM.Standard.E3.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Standard.E4.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Standard.A1.Flex"
+          - eq:
+            - BastionShape 
+            - "VM.Optimized3.Flex"
+
   instance_os:
     type: enum
     required: false
@@ -391,9 +470,9 @@ variables:
     default: "8"
     enum:
       - "8"
-      - "7.9"
 
-  mysql_shape_name:
+
+  mysql_db_system_shape:
     type: enum
     required: false
     default: "MySQL.VM.Standard.E3.1.8GB"
@@ -423,12 +502,25 @@ variables:
     description: "Type Database System (MDS) Admin Username."
     default: "admin"
 
-  mysql_db_name:
+  mysql_db_system_description:
+    type: string
+    required: false
+    title: "MySQL Database System Description"
+    description: "MySQL Database System (MDS) Description."
+    default: "Tomcat MySQL Database System"
+
+  mysql_db_system_hostname_label:
+    type: string
+    required: false
+    title: "MySQL Database System Hostname Label"
+    description: "MySQL Database System (MDS) Hostname Label."
+
+  mysql_db_system_db_name:
     type: string
     required: false
     title: "MySQL Database System DB Name"
     description: "Type MySQL Database System (MDS) DB Name."
-    default: "mydb"
+    default: "TomcatMDS"
 
   mysql_db_system_backup_policy_is_enabled:
     type: boolean 
@@ -469,20 +561,14 @@ variables:
 
 outputs:
 
-  generated_ssh_private_key:
-    title: "Generated SSH Private Key"
-    displayText: "Generated SSH Private Key"
+  tomcat_home_URL:
+    title: "Tomcat Home URL"
+    displayText: "Tomcat Home URL"
     type: copyableString
     visible: true
 
-  todoapp_url:
-    title: "TODO App URL"
-    displayText: "TODO App URL"
+  tomcat_demo_app_URL:
+    title: "Tomcat Demo APP (todoapp) URL"
+    displayText: "Tomcat Demo APP (todoapp) URL"
     type: copyableString
-    visible: true
-
-  bastion_public_ip:
-    title: "Bastion Host Public IP"
-    displayText: "Bastion Host Public IP"
-    type: string
     visible: true

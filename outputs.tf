@@ -1,24 +1,42 @@
-## Copyright (c) 2021 Oracle and/or its affiliates.
+## Copyright (c) 2022 Oracle and/or its affiliates.
 ## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
-output "generated_ssh_private_key" {
+output "tomcat_home_URL" {
+  value = "http://${module.oci-arch-tomcat.public_ip[0]}/"
+}
+
+output "tomcat_demo_app_URL" {
+  value = "http://${module.oci-arch-tomcat.public_ip[0]}/todoapp/list"
+}
+
+output "tomcat_private_ips" {
+   value = module.oci-arch-tomcat.tomcat_nodes_private_ips
+}
+
+output "bastion_session_ids" {
+   value = module.oci-arch-tomcat.bastion_session_ids
+}
+
+output "bastion_session_ssh_metadata" {
+  value = module.oci-arch-tomcat.bastion_session_ssh_metadata
+}
+
+output "bastion_server_public_ip" {
+  value = var.use_bastion_service ? "" : oci_core_instance.bastion_instance[0].public_ip 
+}
+
+output "generated_ssh_public_key_for_bastion_server" {
   value     = tls_private_key.public_private_key_pair.private_key_pem
   sensitive = true
 }
 
-output "todoapp_url" {
-  value = "http://${oci_load_balancer.lb01.ip_addresses[0]}/todoapp/list"
+output "generated_ssh_private_key_for_tomcat_servers" {
+  value     = module.oci-arch-tomcat.generated_ssh_private_key
+  sensitive = true
 }
 
-output "bastion_public_ip" {
-  value = oci_core_instance.bastion_instance.*.public_ip
-}
-
-output "bastion_ssh_metadata" {
-  value = oci_bastion_session.ssh_via_bastion_service.*.ssh_metadata
-}
-
-output "tomcat-server_private_ips" {
-  value = data.oci_core_vnic.tomcat-server_primaryvnic.*.private_ip_address
+output "generated_ssh_public_key_for_tomcat_servers" {
+  value     = module.oci-arch-tomcat.generated_ssh_public_key
+  sensitive = true
 }
 

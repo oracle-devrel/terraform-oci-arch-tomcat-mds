@@ -10,7 +10,7 @@ For details of the architecture, see [_Deploy Apache Tomcat connected to MySQL D
 
 - Permission to `manage` the following types of resources in your Oracle Cloud Infrastructure tenancy: `vcns`, `internet-gateways`, `route-tables`, `network-security-groups`, `subnets`, `mysql-family`, and `instances`.
 
-- Quota to create the following resources: 1 VCN, 3 subnets, 1 Internet Gateway, 1 NAT Gateway, 2 route rules, 1 MDS instance, and 3 compute instances (bastion host + 2 Tomcat servers).
+- Quota to create the following resources: 1 VCN, 3 subnets, 1 Internet Gateway, 1 NAT Gateway, 2 route rules, 1 MDS instance, and 2 compute instances for TomcatVMs, 1 compute instance for BastionHost or 1 Bastion Service instead. 
 
 If you don't have the required permissions and quota, contact your tenancy administrator. See [Policy Reference](https://docs.cloud.oracle.com/en-us/iaas/Content/Identity/Reference/policyreference.htm), [Service Limits](https://docs.cloud.oracle.com/en-us/iaas/Content/General/Concepts/servicelimits.htm), [Compartment Quotas](https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcequotas.htm).
 
@@ -61,9 +61,6 @@ private_key_path     = "<pem_private_key_path>"
 # Region
 region = "<oci_region>"
 
-# Availablity Domain 
-availablity_domain_name = "<availablity_domain_name>"
-
 # Compartment
 compartment_ocid = "<compartment_ocid>"
 
@@ -71,7 +68,10 @@ compartment_ocid = "<compartment_ocid>"
 numberOfNodes = 2
 
 # MySQL DBSystem Admin Password 
-mysql_db_system_admin_password = "<mysql_password>"
+mysql_db_system_admin_password = "<mysql_db_system_admin_password>"
+
+# MySQL DBSystem Password 
+mysql_db_system_password = "<mysql_db_system_password>"
 
 ````
 
