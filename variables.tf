@@ -188,7 +188,7 @@ variable "mysql_db_system_username" {
 }
 
 variable "mysql_db_system_db_name" {
-  default = "mydb"
+  default = "TomcatMDS"
 }
 
 variable "mysql_db_system_shape" {
