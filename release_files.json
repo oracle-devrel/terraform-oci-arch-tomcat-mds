@@ -28,6 +28,9 @@
         "dst": "provider.tf"
       },
       {
+        "src_pattern": "sqls/*"
+      }, 
+      {
         "src_pattern": "scripts/*"
       }        
     ]
