@@ -22,6 +22,7 @@ module "mds-instance" {
     mysql_db_system_description                     = var.mysql_db_system_description  
     mysql_db_system_hostname_label                  = var.mysql_db_system_hostname_label
     mysql_db_system_fault_domain                    = var.mysql_db_system_fault_domain
+    mysql_db_system_is_highly_available             = var.mysql_db_system_is_highly_available
     mysql_db_system_maintenance_window_start_time   = var.mysql_db_system_maintenance_window_start_time
     mysql_db_system_defined_tags                    = { "${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }

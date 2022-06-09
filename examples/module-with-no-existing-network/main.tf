@@ -20,8 +20,7 @@ provider "oci" {
 }
 
 module "oci-arch-tomcat-mds" {
-  #source                         = "github.com/oracle-devrel/terraform-oci-arch-tomcat-mds"
-  source                         = "../../"
+  source                         = "github.com/oracle-devrel/terraform-oci-arch-tomcat-mds"
   tenancy_ocid                   = var.tenancy_ocid
   user_ocid                      = var.user_ocid
   fingerprint                    = var.fingerprint

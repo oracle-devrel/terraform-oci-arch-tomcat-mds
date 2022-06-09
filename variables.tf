@@ -208,8 +208,7 @@ variable "mysql_db_system_data_storage_size_in_gb" {
 }
 
 variable "mysql_db_system_description" {
-  description = "MySQL DB System for magento-MDS"
-  default = "MySQL DB System for magento-MDS"
+  default = "MySQL DB System for TomcatMDS"
 }
 
 variable "mysql_db_system_display_name" {
