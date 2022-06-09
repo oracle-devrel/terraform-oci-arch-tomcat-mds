@@ -188,7 +188,7 @@ variable "mysql_db_system_username" {
 }
 
 variable "mysql_db_system_db_name" {
-  default = "mydb"
+  default = "TomcatMDS"
 }
 
 variable "mysql_db_system_shape" {
@@ -208,8 +208,7 @@ variable "mysql_db_system_data_storage_size_in_gb" {
 }
 
 variable "mysql_db_system_description" {
-  description = "MySQL DB System for magento-MDS"
-  default = "MySQL DB System for magento-MDS"
+  default = "MySQL DB System for TomcatMDS"
 }
 
 variable "mysql_db_system_display_name" {
@@ -227,5 +226,6 @@ variable "mysql_db_system_hostname_label" {
 variable "mysql_db_system_maintenance_window_start_time" {
   default = "SUNDAY 14:30"
 }
+
 
 

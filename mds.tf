@@ -6,7 +6,7 @@ locals {
 }
 
 module "mds-instance" {
-    providers                                       = { oci = oci.targetregion }
+#    providers                                       = { oci = oci.targetregion }
     source                                          = "github.com/oracle-devrel/terraform-oci-cloudbricks-mysql-database?ref=v1.0.4.1"
     tenancy_ocid                                    = var.tenancy_ocid
     region                                          = var.region
