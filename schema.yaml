@@ -23,7 +23,7 @@ variableGroups:
   - lb_nsg_ids
   - compute_subnet_id
   - compute_nsg_ids
-  - mds_subnet_id
+  - mysql_db_system_subnet_id
   - bastion_subnet_id
   - bastion_nsg_ids
   - mysql_db_system_maintenance_window_start_time
@@ -34,6 +34,7 @@ variableGroups:
   - compartment_ocid
   - availability_domain_name
   - mysql_db_system_admin_password
+  - mysql_db_system_password
   - numberOfNodes
   - tomcat_version
   - use_bastion_service
@@ -94,14 +95,17 @@ variableGroups:
         - show_advanced
   variables: 
   - mysql_db_system_shape
+  - mysql_db_system_is_highly_available
   - mysql_db_system_db_name 
   - mysql_db_system_admin_username
+  - mysql_db_system_username
   - mysql_db_name
+  - mysql_db_system_description
   - mysql_db_system_backup_policy_is_enabled
   - mysql_db_system_data_storage_size_in_gb
+  - mysql_db_system_fault_domain
   - mysql_db_system_display_name
   - mysql_db_system_hostname_label
-  - mysql_db_system_maintenance_window_start_time
 
 variables:
 
@@ -126,7 +130,7 @@ variables:
     title: Region
     description: "Region where you want to deploy the resources defined by this stack."
 
-  availablity_domain_name:
+  availability_domain_name:
     type: oci:identity:availabilitydomain:name
     required: true
     visibile: true
@@ -170,6 +174,16 @@ variables:
     visibile: true
     title: "MySQL Database System Admin Password"
     description: "Type MySQL Database System (MDS) Admin Password"
+    minLength: 9
+    maxLength: 30
+    pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$ 
+
+  mysql_db_system_password:
+    type: password
+    required: true
+    visibile: true
+    title: "MySQL Database System User Password"
+    description: "Type MySQL Database System (MDS) User Password"
     minLength: 9
     maxLength: 30
     pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$ 
@@ -225,13 +239,6 @@ variables:
         - eq:
           - lb_shape 
           - "flexible"
-
-  igw_display_name:
-    type: string
-    required: false
-    title: "InternetGateway Display Name"
-    description: "Type InternetGateway Display Name."
-    default: "internet-gateway"
 
   tomcat_mds_vcn_cidr_block:
     type: string
@@ -431,7 +438,7 @@ variables:
     minimum: 1
     maximum: 128
     multipleOf: 1
-    default: 6
+    default: 1
     title: "Bastion Shape Flex Shape Memory (GB)"
     description: "Choose number GB for Flex Shape Memory."
     visible:
@@ -471,7 +478,6 @@ variables:
     enum:
       - "8"
 
-
   mysql_db_system_shape:
     type: enum
     required: false
@@ -494,6 +500,24 @@ variables:
       - "MySQL.VM.Standard.E3.48.768GB"    
       - "MySQL.VM.Standard.E3.64.1024GB"  
       - "MySQL.HeatWave.VM.Standard.E3"      
+  
+  mysql_db_system_fault_domain:
+    type: enum
+    required: false
+    default: "FAULT-DOMAIN-1"
+    title: "MySQL Database System Fault Domain"
+    description: "Choose MySQL Database System (MDS) Fault Domain for your deployment."
+    enum:
+      - "FAULT-DOMAIN-1"
+      - "FAULT-DOMAIN-2"
+      - "FAULT-DOMAIN-3" 
+
+  mysql_db_system_is_highly_available:
+    type: boolean
+    visibile: true
+    default: false
+    title: "MySQL Database System highly available?"
+    description: "Check the box to setup MySQL Database System highly available."      
 
   mysql_db_system_admin_username:
     type: string
@@ -508,12 +532,6 @@ variables:
     title: "MySQL Database System Description"
     description: "MySQL Database System (MDS) Description."
     default: "Tomcat MySQL Database System"
-
-  mysql_db_system_hostname_label:
-    type: string
-    required: false
-    title: "MySQL Database System Hostname Label"
-    description: "MySQL Database System (MDS) Hostname Label."
 
   mysql_db_system_db_name:
     type: string
@@ -539,19 +557,23 @@ variables:
     title: "MySQL Database System Data Storage size in GB"
     description: "Choose MySQL Database System (MDS) Data Storage size in GB."
 
+  mysql_db_system_username:
+    type: string
+    required: false
+    title: "MySQL Database System User Name"
+    description: "Type MySQL Database System (MDS) User Name."
+
   mysql_db_system_display_name: 
     type: string
     required: false
     title: "MySQL Database System Display Name"
     description: "Type MySQL Database System (MDS) Display Name."
-    default: "mysql_service"
 
   mysql_db_system_hostname_label: 
     type: string
     required: false
     title: "MySQL Database System Hostname Label"
     description: "Type MySQL Database System (MDS) Hostname Label."
-    default: "mysqlhost"
 
   release:
     type: string
